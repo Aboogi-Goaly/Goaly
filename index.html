@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="GOALY">
+<meta name="theme-color" content="#EEEAE0">
+<title>GOALY</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#EEEAE0;
+    --paper-2:#E3DECF;
+    --white:#FBFAF6;
+    --ink:#23281F;
+    --ink-soft:#6B7263;
+    --line:rgba(35,40,31,0.13);
+    --forest:#2F5233;
+    --forest-soft:rgba(47,82,51,0.13);
+    --slate:#3D5A73;
+    --slate-soft:rgba(61,90,115,0.13);
+    --ochre:#B9812E;
+    --ochre-soft:rgba(185,129,46,0.15);
+    --rose:#8C3B54;
+    --rose-soft:rgba(140,59,84,0.13);
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  h1,h2,p,ul,li{margin:0;padding:0;}
+  button{font-family:inherit;background:none;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--paper);
+    background-image:radial-gradient(circle,rgba(35,40,31,0.07) 1px,transparent 1px);
+    background-size:16px 16px;
+    color:var(--ink);
+    font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;
+    min-height:100vh;min-height:100dvh;
+    overflow-x:hidden;
+  }
+  #app{max-width:480px;margin:0 auto;min-height:100vh;min-height:100dvh;position:relative;padding-bottom:calc(80px + env(safe-area-inset-bottom));}
+  .page{padding:max(22px, env(safe-area-inset-top)) 20px 24px;}
+
+  /* ---- Home ---- */
+  .log-header{padding-top:10px;margin-bottom:22px;border-bottom:1px solid var(--line);padding-bottom:18px;}
+  .eyebrow{font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:8px;}
+  .log-header h1{font-family:'Fraunces',serif;font-weight:600;font-size:27px;line-height:1.2;margin-bottom:12px;}
+  .streak-badge{display:inline-flex;align-items:center;gap:6px;font-family:'IBM Plex Mono',monospace;font-size:13px;background:var(--rose-soft);color:var(--rose);padding:7px 13px;border-radius:999px;font-weight:600;}
+
+  .goal-list{display:flex;flex-direction:column;gap:12px;margin-bottom:20px;}
+  .goal-list.compact{gap:8px;margin-bottom:0;}
+  .goal-row{
+    display:flex;align-items:center;gap:14px;
+    background:var(--white);border:1px solid var(--line);border-radius:16px;
+    padding:15px 16px;width:100%;text-align:left;cursor:pointer;
+    transition:transform .12s ease,background .2s ease,border-color .2s ease;
+  }
+  .goal-row:active{transform:scale(.98);}
+  .goal-row.done{background:var(--accent-soft);border-color:var(--accent);}
+  .goal-mark{
+    flex-shrink:0;width:30px;height:30px;border-radius:50%;
+    border:2px solid var(--ink-soft);
+    display:flex;align-items:center;justify-content:center;color:#fff;
+  }
+  .goal-row.done .goal-mark{border-color:var(--accent);background:var(--accent);animation:stampIn .4s cubic-bezier(.34,1.56,.64,1);}
+  .goal-mark svg{width:16px;height:16px;}
+  .goal-title{display:block;font-weight:600;font-size:16px;}
+  .goal-sub{display:block;font-size:13px;color:var(--ink-soft);margin-top:2px;}
+  .goal-row.done .goal-sub{color:var(--accent);}
+  @keyframes stampIn{0%{transform:scale(1.5) rotate(-10deg);opacity:0;}60%{transform:scale(.9) rotate(3deg);}100%{transform:scale(1) rotate(0);}}
+
+  .complete-banner{text-align:center;font-family:'Fraunces',serif;font-size:14.5px;color:var(--forest);background:var(--forest-soft);border-radius:14px;padding:14px;}
+
+  /* ---- Tabbar ---- */
+  .tabbar{
+    position:fixed;left:0;right:0;bottom:0;max-width:480px;margin:0 auto;
+    display:flex;background:rgba(251,250,246,.92);backdrop-filter:blur(12px);
+    border-top:1px solid var(--line);
+    padding:10px 20px calc(10px + env(safe-area-inset-bottom));
+  }
+  .tab{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;border:none;font-size:11px;color:var(--ink-soft);padding:4px;cursor:pointer;}
+  .tab.active{color:var(--forest);font-weight:600;}
+  .tab svg{width:22px;height:22px;}
+
+  /* ---- Calendar ---- */
+  .cal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
+  .cal-header h1{font-family:'Fraunces',serif;font-size:20px;font-weight:600;}
+  .cal-nav{background:var(--white);border:1px solid var(--line);width:36px;height:36px;border-radius:50%;font-size:18px;cursor:pointer;color:var(--ink);}
+  .cal-stats{display:flex;gap:10px;margin-bottom:18px;}
+  .stat{flex:1;background:var(--white);border:1px solid var(--line);border-radius:14px;padding:12px;text-align:center;}
+  .stat-num{display:block;font-family:'IBM Plex Mono',monospace;font-size:22px;font-weight:600;color:var(--forest);}
+  .stat-label{display:block;font-size:10.5px;color:var(--ink-soft);margin-top:2px;text-transform:uppercase;letter-spacing:.04em;}
+  .cal-weekdays{display:grid;grid-template-columns:repeat(7,1fr);text-align:center;font-size:11px;color:var(--ink-soft);margin-bottom:6px;font-family:'IBM Plex Mono',monospace;}
+  .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;}
+  .cal-day{aspect-ratio:1;background:var(--white);border:1px solid var(--line);border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer;padding:2px;}
+  .cal-day.empty{background:transparent;border:none;cursor:default;}
+  .cal-num{font-family:'IBM Plex Mono',monospace;font-size:12px;}
+  .cal-day.today{border-color:var(--ink);border-width:2px;}
+  .cal-day.complete{background:var(--forest-soft);border-color:var(--forest);}
+  .cal-day.complete .cal-num{color:var(--forest);font-weight:700;}
+  .cal-day.future{opacity:.32;pointer-events:none;}
+  .cal-dots{display:flex;gap:2px;height:6px;}
+  .dot{width:4px;height:4px;border-radius:50%;}
+  .dot.slate{background:var(--slate);}
+  .dot.forest{background:var(--forest);}
+  .dot.ochre{background:var(--ochre);}
+  .reset-link{margin-top:26px;width:100%;color:var(--ink-soft);font-size:12px;text-decoration:underline;padding:10px;cursor:pointer;border:none;}
+
+  /* ---- Modal ---- */
+  .modal-backdrop{position:fixed;inset:0;background:rgba(35,40,31,.45);display:flex;align-items:flex-end;justify-content:center;z-index:50;animation:fadeIn .2s ease;}
+  .modal-sheet{background:var(--paper);width:100%;max-width:480px;border-radius:20px 20px 0 0;padding:24px 20px calc(24px + env(safe-area-inset-bottom));animation:slideUp .25s cubic-bezier(.2,.8,.3,1);}
+  .modal-sheet h2{font-family:'Fraunces',serif;font-size:19px;margin-bottom:14px;}
+  .modal-sheet p{color:var(--ink-soft);font-size:14px;line-height:1.5;margin-bottom:6px;}
+  .modal-sheet textarea{width:100%;min-height:100px;border:1px solid var(--line);border-radius:12px;padding:12px;font-family:'Inter';font-size:16px;background:var(--white);color:var(--ink);resize:vertical;}
+  .modal-actions{display:flex;gap:10px;margin-top:16px;}
+  .btn{flex:1;border:none;border-radius:12px;padding:13px;font-weight:600;font-size:15px;cursor:pointer;}
+  .btn.primary{background:var(--accent,var(--forest));color:#fff;}
+  .btn.ghost{background:var(--paper-2);color:var(--ink);}
+  .btn.danger{background:var(--rose);color:#fff;}
+  .day-summary{list-style:none;display:flex;flex-direction:column;gap:8px;margin-bottom:4px;}
+  .note-quote{font-family:'Fraunces',serif;font-style:italic;color:var(--ink-soft);background:var(--ochre-soft);padding:12px 14px;border-radius:12px;margin-top:12px;}
+  @keyframes fadeIn{from{opacity:0;}to{opacity:1;}}
+  @keyframes slideUp{from{transform:translateY(30px);opacity:0;}to{transform:translateY(0);opacity:1;}}
+
+  .toast{position:fixed;left:50%;bottom:100px;transform:translateX(-50%);background:var(--ink);color:var(--paper);padding:10px 18px;border-radius:999px;font-size:13px;z-index:60;animation:fadeIn .2s ease;white-space:nowrap;}
+  .loading-screen{display:flex;align-items:center;justify-content:center;height:100vh;height:100dvh;font-family:'Fraunces',serif;color:var(--ink-soft);}
+
+  @media (prefers-reduced-motion:reduce){*{animation-duration:.01ms !important;animation-iteration-count:1 !important;transition-duration:.01ms !important;}}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+/* ---------- state ---------- */
+let entries = {};
+let view = 'home';
+let calDate = new Date();
+let loading = true;
+let modal = null;
+let toast = null;
+
+/* ---------- constants ---------- */
+const WEEKDAYS = ['Mo','Di','Mi','Do','Fr','Sa','So'];
+const WEEKDAYS_LONG = ['Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag','Sonntag'];
+const MONTHS = ['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
+const CHECK_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>';
+const HOME_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>';
+const CAL_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>';
+
+/* ---------- helpers ---------- */
+function pad(n){ return n.toString().padStart(2,'0'); }
+function fmt(d){ return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`; }
+function todayKey(){ return fmt(new Date()); }
+function escapeHtml(s){ return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function truncate(s,n){ return s.length>n ? s.slice(0,n-1)+'…' : s; }
+
+function peekDay(key){
+  return entries[key] || {training:false, reading:false, learning:false, learningNote:''};
+}
+function ensureDay(key){
+  if(!entries[key]) entries[key] = {training:false, reading:false, learning:false, learningNote:''};
+  return entries[key];
+}
+function isComplete(day){ return !!(day && day.training && day.reading && day.learning); }
+
+function getEntryNumber(){
+  const keys = Object.keys(entries).sort();
+  const t = todayKey();
+  return keys.includes(t) ? keys.indexOf(t)+1 : keys.length+1;
+}
+
+function getStreak(){
+  let d = new Date();
+  if(!isComplete(peekDay(fmt(d)))) d.setDate(d.getDate()-1);
+  let streak = 0;
+  while(isComplete(peekDay(fmt(d)))){ streak++; d.setDate(d.getDate()-1); }
+  return streak;
+}
+function getLongestStreak(){
+  const dates = Object.keys(entries).filter(k=>isComplete(entries[k])).sort();
+  if(!dates.length) return 0;
+  let longest=1, current=1;
+  for(let i=1;i<dates.length;i++){
+    const prev = new Date(dates[i-1]+'T00:00:00');
+    const cur = new Date(dates[i]+'T00:00:00');
+    const diff = Math.round((cur-prev)/86400000);
+    if(diff===1){ current++; longest=Math.max(longest,current); } else { current=1; }
+  }
+  return longest;
+}
+
+/* ---------- storage (plain localStorage — works standalone, no account needed) ---------- */
+async function loadEntries(){
+  try{
+    const raw = localStorage.getItem('goaly-entries');
+    entries = raw ? JSON.parse(raw) : {};
+  }catch(e){
+    entries = {};
+  }
+  loading = false;
+  render();
+}
+async function saveEntries(){
+  try{
+    localStorage.setItem('goaly-entries', JSON.stringify(entries));
+  }catch(e){
+    showToast('Speichern fehlgeschlagen — bitte erneut versuchen.');
+  }
+}
+function showToast(msg){
+  toast = msg;
+  render();
+  setTimeout(()=>{ toast=null; render(); }, 2200);
+}
+
+/* ---------- actions ---------- */
+function toggleGoalForDate(dateKey, goal){
+  if(dateKey > todayKey()) return;
+  const day = ensureDay(dateKey);
+  day[goal] = !day[goal];
+  render();
+  saveEntries();
+}
+function openLearningModal(dateKey){
+  if(dateKey > todayKey()) return;
+  modal = {type:'learning', date: dateKey};
+  render();
+}
+function saveLearning(dateKey, noteText){
+  const day = ensureDay(dateKey);
+  day.learning = true;
+  day.learningNote = noteText.trim();
+  modal = null;
+  render();
+  saveEntries();
+}
+function clearLearning(dateKey){
+  const day = ensureDay(dateKey);
+  day.learning = false;
+  day.learningNote = '';
+  modal = null;
+  render();
+  saveEntries();
+}
+async function doReset(){
+  entries = {};
+  modal = null;
+  render();
+  await saveEntries();
+  showToast('Alle Einträge wurden gelöscht.');
+}
+
+/* ---------- render ---------- */
+function goalRow(key, title, done, accent, sub, dateKey){
+  return `
+  <button class="goal-row ${done?'done':''}" data-goal="${key}" data-date="${dateKey}" style="--accent:var(--${accent});--accent-soft:var(--${accent}-soft)">
+    <span class="goal-mark">${done?CHECK_SVG:''}</span>
+    <span class="goal-text">
+      <span class="goal-title">${title}</span>
+      <span class="goal-sub">${sub}</span>
+    </span>
+  </button>`;
+}
+
+function renderHome(){
+  const key = todayKey();
+  const day = peekDay(key);
+  const streak = getStreak();
+  const d = new Date();
+  const weekday = WEEKDAYS_LONG[(d.getDay()+6)%7];
+  const dateLabel = `${weekday}, ${d.getDate()}. ${MONTHS[d.getMonth()]}`;
+  const entryNum = getEntryNumber();
+
+  return `
+  <div class="page home">
+    <header class="log-header">
+      <div class="eyebrow">GOALY · Eintrag Nr. ${entryNum}</div>
+      <h1>${dateLabel}</h1>
+      <div class="streak-badge">🔥 ${streak===0?'Noch keine Serie':streak+' Tag'+(streak===1?'':'e')+' in Folge'}</div>
+    </header>
+    <section class="goal-list">
+      ${goalRow('reading','Lesen', day.reading, 'slate', day.reading?'Erledigt':'Noch offen', key)}
+      ${goalRow('training','Trainieren', day.training, 'forest', day.training?'Erledigt':'Noch offen', key)}
+      ${goalRow('learning','Etwas Neues gelernt', day.learning, 'ochre', day.learning ? (day.learningNote? '„'+escapeHtml(truncate(day.learningNote,40))+'"' : 'Erledigt') : 'Antippen zum Eintragen', key)}
+    </section>
+    ${isComplete(day) ? `<div class="complete-banner">Tag komplett — alle drei Ziele erreicht 🌿</div>` : ''}
+  </div>`;
+}
+
+function renderCalendar(){
+  const y = calDate.getFullYear(), m = calDate.getMonth();
+  const first = new Date(y,m,1);
+  const startOffset = (first.getDay()+6)%7;
+  const daysInMonth = new Date(y,m+1,0).getDate();
+  const todayK = todayKey();
+
+  let cells = '';
+  for(let i=0;i<startOffset;i++) cells += `<div class="cal-day empty"></div>`;
+  for(let n=1;n<=daysInMonth;n++){
+    const key = `${y}-${pad(m+1)}-${pad(n)}`;
+    const day = peekDay(key);
+    const complete = isComplete(day);
+    const isToday = key===todayK;
+    const isFuture = key>todayK;
+    cells += `
+    <button class="cal-day ${complete?'complete':''} ${isToday?'today':''} ${isFuture?'future':''}" data-date="${key}">
+      <span class="cal-num">${n}</span>
+      <span class="cal-dots">
+        ${day.reading?'<i class="dot slate"></i>':''}
+        ${day.training?'<i class="dot forest"></i>':''}
+        ${day.learning?'<i class="dot ochre"></i>':''}
+      </span>
+    </button>`;
+  }
+
+  return `
+  <div class="page calendar">
+    <header class="cal-header">
+      <button class="cal-nav" data-nav="-1" aria-label="Vorheriger Monat">‹</button>
+      <h1>${MONTHS[m]} ${y}</h1>
+      <button class="cal-nav" data-nav="1" aria-label="Nächster Monat">›</button>
+    </header>
+    <div class="cal-stats">
+      <div class="stat"><span class="stat-num">${getStreak()}</span><span class="stat-label">Aktuelle Serie</span></div>
+      <div class="stat"><span class="stat-num">${getLongestStreak()}</span><span class="stat-label">Rekord</span></div>
+    </div>
+    <div class="cal-weekdays">${WEEKDAYS.map(w=>`<span>${w}</span>`).join('')}</div>
+    <div class="cal-grid">${cells}</div>
+    <button class="reset-link" data-action="ask-reset">Alle Daten zurücksetzen</button>
+  </div>`;
+}
+
+function renderTabbar(){
+  return `
+  <nav class="tabbar">
+    <button class="tab ${view==='home'?'active':''}" data-view="home">${HOME_ICON}<span>Heute</span></button>
+    <button class="tab ${view==='calendar'?'active':''}" data-view="calendar">${CAL_ICON}<span>Kalender</span></button>
+  </nav>`;
+}
+
+function learningModalHTML(){
+  const day = peekDay(modal.date);
+  return `
+  <div class="modal-backdrop">
+    <div class="modal-sheet">
+      <h2>Was hast du heute Neues gelernt?</h2>
+      <textarea id="learning-input" placeholder="z. B. wie man einen Handstand macht …">${escapeHtml(day.learningNote)}</textarea>
+      <div class="modal-actions">
+        ${day.learning ? `<button class="btn ghost" data-action="clear-learning">Entfernen</button>` : `<button class="btn ghost" data-action="close-modal">Abbrechen</button>`}
+        <button class="btn primary" data-action="save-learning" style="--accent:var(--ochre)">Speichern</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+function dayModalHTML(){
+  const day = peekDay(modal.date);
+  const d = new Date(modal.date+'T00:00:00');
+  const label = `${d.getDate()}. ${MONTHS[d.getMonth()]} ${d.getFullYear()}`;
+  return `
+  <div class="modal-backdrop">
+    <div class="modal-sheet">
+      <h2>${label}</h2>
+      <section class="goal-list compact">
+        ${goalRow('reading','Lesen', day.reading, 'slate', day.reading?'Erledigt':'Offen', modal.date)}
+        ${goalRow('training','Trainieren', day.training, 'forest', day.training?'Erledigt':'Offen', modal.date)}
+        ${goalRow('learning','Etwas Neues gelernt', day.learning, 'ochre', day.learning?(day.learningNote?'„'+escapeHtml(truncate(day.learningNote,40))+'"':'Erledigt'):'Offen', modal.date)}
+      </section>
+      <div class="modal-actions">
+        <button class="btn primary" data-action="close-modal">Schließen</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+function confirmResetModalHTML(){
+  return `
+  <div class="modal-backdrop">
+    <div class="modal-sheet">
+      <h2>Alle Einträge löschen?</h2>
+      <p>Das entfernt deinen gesamten Verlauf inklusive deiner Serie. Das kann nicht rückgängig gemacht werden.</p>
+      <div class="modal-actions">
+        <button class="btn ghost" data-action="close-modal">Abbrechen</button>
+        <button class="btn danger" data-action="confirm-reset">Löschen</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+function renderModal(){
+  if(!modal) return '';
+  if(modal.type==='learning') return learningModalHTML();
+  if(modal.type==='day') return dayModalHTML();
+  if(modal.type==='confirmReset') return confirmResetModalHTML();
+  return '';
+}
+
+function renderToast(){
+  return toast ? `<div class="toast">${escapeHtml(toast)}</div>` : '';
+}
+
+function render(){
+  const app = document.getElementById('app');
+  if(loading){ app.innerHTML = `<div class="loading-screen">GOALY lädt …</div>`; return; }
+  let html = view==='home' ? renderHome() : renderCalendar();
+  html += renderTabbar();
+  html += renderModal();
+  html += renderToast();
+  app.innerHTML = html;
+}
+
+/* ---------- events ---------- */
+function onAppClick(e){
+  const goalBtn = e.target.closest('[data-goal]');
+  if(goalBtn){
+    const g = goalBtn.dataset.goal;
+    const dateForGoal = goalBtn.dataset.date || todayKey();
+    if(g==='learning') openLearningModal(dateForGoal);
+    else toggleGoalForDate(dateForGoal, g);
+    return;
+  }
+  const tabBtn = e.target.closest('[data-view]');
+  if(tabBtn){ view = tabBtn.dataset.view; render(); return; }
+
+  const navBtn = e.target.closest('[data-nav]');
+  if(navBtn){ calDate.setMonth(calDate.getMonth()+parseInt(navBtn.dataset.nav,10)); render(); return; }
+
+  const actionBtn = e.target.closest('[data-action]');
+  if(actionBtn){
+    const act = actionBtn.dataset.action;
+    if(act==='close-modal'){ modal=null; render(); }
+    else if(act==='save-learning'){
+      const val = document.getElementById('learning-input').value;
+      saveLearning(modal.date, val);
+    }
+    else if(act==='clear-learning'){ clearLearning(modal.date); }
+    else if(act==='ask-reset'){ modal={type:'confirmReset'}; render(); }
+    else if(act==='confirm-reset'){ doReset(); }
+    return;
+  }
+
+  const dayBtn = e.target.closest('[data-date]');
+  if(dayBtn && dayBtn.dataset.date && !dayBtn.closest('.goal-row')){
+    modal = {type:'day', date: dayBtn.dataset.date};
+    render();
+    return;
+  }
+
+  if(e.target.classList.contains('modal-backdrop')){ modal=null; render(); }
+}
+
+document.getElementById('app').addEventListener('click', onAppClick);
+render();
+loadEntries();
+</script>
+</body>
+</html>
